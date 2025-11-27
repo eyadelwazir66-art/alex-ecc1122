@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALEX ECC Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+        // يمكنك إضافة Import لـ Firestore أو Auth هنا لاحقًا:
+        // import { getFirestore } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration (Placeholder values kept)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbSTpiNGKhNd9ukkbj6QdtR_XgovJN6UY",
+            authDomain: "alex-ecc1122.firebaseapp.com",
+            projectId: "alex-ecc1122",
+            storageBucket: "alex-ecc1122.firebasestorage.app",
+            messagingSenderId: "3081181432",
+            appId: "1:3081181432:web:643167e415c7e2f12cc30d",
+            measurementId: "G-5WW3H5JQND"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        
+        // يمكن تخزين الـ app في الـ global scope للوصول إليه من السكربت العادي
+        window.firebaseApp = app; 
+    </script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* Dark Blue */
+            --secondary-color: #3498db; /* Bright Blue */
+            --accent-color: #e74c3c; /* Red */
+            --success-color: #2ecc71; /* Green */
+            --warning-color: #f39c12; /* Orange */
+            --bg-light: #ecf0f1;
+            --bg-dark: #bdc3c7;
+            --card-bg: #fff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            display: flex;
+            min-height: 100vh;
+        }
+        /* شاشة تسجيل الدخول */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+        }
+
+        .login-box input, .login-box select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--bg-dark);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .login-box button {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+
+        .login-box button:hover {
+            background-color: #2980b9;
+        }
+
+        /* تخطيط لوحة التحكم */
+        #dashboard-container {
+            display: none; /* يتم إظهاره بعد تسجيل الدخول */
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: var(--success-color);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            text-decoration: none;
+            color: #bdc3c7;
+            font-size: 16px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: #34495e;
+            color: white;
+        }
+
+        .nav-link i {
+            margin-left: 15px;
+            font-size: 18px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-profile {
+            font-size: 16px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        /* زر تسجيل الخروج المُضاف */
+        .logout-button {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-button:hover {
+            background-color: #c0392b;
+        }
+        
+        .urgent-alert {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        /* قسم الإحصائيات (Overview) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .stat-card .icon {
+            font-size: 40px;
+            opacity: 0.2;
+            align-self: flex-end;
+            color: var(--secondary-color);
+        }
+        
+        /* الأقسام الداخلية (Section Content) */
+        .content-wrapper {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none; /* يتم التحكم بها بواسطة JS */
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        
+        /* الجداول */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--bg-dark);
+            text-align: right;
+        }
+
+        .data-table th {
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .data-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .car-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-left: 10px;
+        }
+        
+        .action-button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            transition: opacity 0.3s;
+            margin-right: 5px;
+        }
+
+        .approve-button { background-color: var(--success-color); }
+        .delete-button { background-color: var(--accent-color); }
+
+        .approve-button:hover, .delete-button:hover { opacity: 0.8; }
+        
+        /* النماذج (Forms) */
+        .form-container {
+            padding: 20px;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .form-container input, .form-container select, .form-container button {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid var(--bg-dark);
+            width: calc(33.33% - 10px);
+        }
+        
+        .form-container button {
+            background-color: var(--secondary-color);
+            color: white;
+            cursor: pointer;
+            width: auto;
+        }
+        
+        /* الدردشة */
+        #chat-messages {
+            /* تعديلات لضمان عرض الرسائل بشكل صحيح */
+            display: flex;
+            flex-direction: column-reverse; 
+            min-height: 300px;
+        }
+        
+        /* التجاوب (Responsive) */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-around;
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+
+            .logo {
+                display: none;
+            }
+
+            .nav-link {
+                padding: 10px;
+                text-align: center;
+                flex-grow: 1;
+                justify-content: center;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+
+            .nav-link i {
+                margin: 0;
+                font-size: 20px;
+            }
+
+            .main-content {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-controls {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .user-profile {
+                margin-top: 0;
+            }
+            
+            .form-container input, .form-container select, .form-container button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>تسجيل الدخول - لوحة تحكم ALEX ECC</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="اسم المستخدم" required>
+                <select id="user-role" required>
+                    <option value="">اختر دورك الوظيفي</option>
+                    <option value="Owner">المالك</option>
+                    <option value="Finance">المحاسبة والمالية</option>
+                    <option value="Sales">المبيعات</option>
+                    <option value="Inventory">المخزون</option>
+                    <option value="Procurement">المشتريات</option>
+                    <option value="HR">الموارد البشرية</option>
+                </select>
+                <button type="submit">تسجيل الدخول</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboard-container">
+        <div class="sidebar">
+            <div class="logo">ALEX ECC</div>
+            <a class="nav-link active" data-section="overview"><i class="fas fa-home"></i> <span>نظرة عامة</span></a>
+            <a class="nav-link" data-section="sold-cars"><i class="fas fa-car-side"></i> <span>السيارات المباعة</span></a>
+            <a class="nav-link" data-section="inventory"><i class="fas fa-warehouse"></i> <span>إدارة المخزون</span></a>
+            <a class="nav-link" data-section="accounts" data-secured="true"><i class="fas fa-file-invoice-dollar"></i> <span>الحسابات</span></a>
+            <a class="nav-link" data-section="hr" data-secured="true"><i class="fas fa-users"></i> <span>الموارد البشرية</span></a>
+            <a class="nav-link" data-section="procurement" data-secured="true"><i class="fas fa-truck-moving"></i> <span>المشتريات</span></a>
+            <a class="nav-link" data-section="owner" data-secured="true"><i class="fas fa-user-shield"></i> <span>قسم المالك</span></a>
+            <a class="nav-link" data-section="chat"><i class="fas fa-comments"></i> <span>الدردشة العامة</span></a>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1 id="current-section-title">نظرة عامة على لوحة التحكم</h1>
+                <div class="header-controls">
+                    <div class="user-profile" id="dashboard-user-info">مرحباً، المستخدم</div>
+                    <button class="logout-button" onclick="logoutUser()">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل خروج
+                    </button>
+                </div>
+            </div>
+            
+            <div class="urgent-alert" id="user-urgent-alert" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="urgent-alert-msg">تنبيه: هناك مهام عاجلة في انتظار موافقتك/إتمامها.</span>
+            </div>
+
+            <div class="content-wrapper" id="overview-wrapper" style="display: flex;">
+                <h2>ملخص الأداء</h2>
+                <div class="stats-grid">
+                    <div class="stat-card" data-color="success">
+                        <div class="icon"><i class="fas fa-car-side"></i></div>
+                        <h3>إجمالي السيارات المباعة (الشهر)</h3>
+                        <span class="value" id="sold-cars-count">0</span>
+                    </div>
+                    <div class="stat-card" data-color="primary">
+                        <div class="icon"><i class="fas fa-warehouse"></i></div>
+                        <h3>المخزون المتوفر</h3>
+                        <span class="value" id="inventory-count">0</span>
+                    </div>
+                    <div class="stat-card" data-color="warning">
+                        <div class="icon"><i class="fas fa-check-circle"></i></div>
+                        <h3>مهام قيد الإنتهاء</h3>
+                        <span class="value" id="pending-tasks-count">0</span>
+                    </div>
+                    <div class="stat-card" data-color="accent">
+                        <div class="icon"><i class="fas fa-truck-moving"></i></div>
+                        <h3>أوامر شراء مُرسلة</h3>
+                        <span class="value" id="procurement-orders-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-wrapper" id="sold-cars-wrapper">
+                <h2>جدول السيارات المباعة حديثاً</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>صورة</th>
+                            <th>السيارة</th>
+                            <th>السعر</th>
+                            <th>العميل</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sold-cars-tbody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="content-wrapper" id="inventory-wrapper">
+                <h2>إضافة سيارة جديدة للمخزون</h2>
+                <div class="form-container">
+                    <form id="addCarForm">
+                        <input type="text" id="new-car-name" placeholder="اسم الشركة (Nissan أو Jitor)" required>
+                        <input type="text" id="new-car-model" placeholder="الموديل (مثل: Sunny)" required>
+                        <input type="text" id="new-car-color" placeholder="اللون" required>
+                        <input type="text" id="new-car-vin" placeholder="رقم الشاسية (VIN)" required>
+                        <button type="submit">إضافة للمخزون</button>
+                    </form>
+                </div>
+                
+                <h2>السيارات المتاحة حالياً <span id="inventory-count-msg"></span></h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>السيارة</th>
+                            <th>رقم الشاسية (VIN)</th>
+                            <th>الحالة</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="available-cars-tbody">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div class="content-wrapper" id="accounts-wrapper">
+                
+                <div id="payroll-overview">
+                    <h2>معالجة المرتبات الشهرية</h2>
+                    <p id="payment-status-msg">
+                        </p>
+                    <button class="action-button approve-button" id="pay-salaries-btn" style="margin-top: 20px;">
+                        <i class="fas fa-hand-holding-usd"></i> تحويل المرتبات الآن
+                    </button>
+                </div>
+
+                <div id="payroll-list-section" style="display:none; margin-top: 30px;">
+                    <h2>قائمة المرتبات الشهرية <span id="payment-progress-msg" style="font-size: 14px; color: var(--secondary-color);"></span></h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>الموظف</th>
+                                <th>الدور</th>
+                                <th>المرتب (EGP)</th>
+                                <th>الحالة</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employees-tbody">
+                            </tbody>
+                    </table>
+                    <button class="action-button approve-button" id="complete-payroll-btn" style="margin-top: 20px; display:none;">
+                        <i class="fas fa-check"></i> إتمام عملية الدفع وإنهاء كشوف المرتبات
+                    </button>
+                </div>
+                
+                <h3 style="margin-top: 30px;">تقرير مالي مختصر</h3>
+                <p>إجمالي التدفقات الشهرية: <span style="color: var(--success-color); font-weight: bold;">1,500,000 EGP</span></p>
+                <p>إجمالي المصروفات الشهرية: <span style="color: var(--accent-color); font-weight: bold;">800,000 EGP</span></p>
+            </div>
+            
+            <div class="content-wrapper" id="hr-wrapper">
+                <h2>إضافة مهمة جديدة</h2>
+                <div class="form-container">
+                    <form id="addTaskForm">
+                        <input type="text" id="new-task-description" placeholder="وصف المهمة (مثل: مراجعة عقود الموظفين)" required style="width: 50%;">
+                        <select id="new-task-assigned" required style="width: calc(30% - 10px);">
+                            <option value="Admin">المدير</option>
+                            <option value="HR">الموارد البشرية</option>
+                            <option value="Finance">المالية</option>
+                            <option value="Sales">المبيعات</option>
+                        </select>
+                        <button type="submit" style="width: calc(20% - 10px);">إضافة</button>
+                    </form>
+                </div>
+                
+                <h2>جدول المهام المعلقة</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>المهمة</th>
+                            <th>المسندة إلى</th>
+                            <th>الحالة</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasks-tbody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="content-wrapper" id="procurement-wrapper">
+                <h2>جدول أوامر الشراء</h2>
+                <table class="data-table" id="procurement-orders-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الطلب</th>
+                            <th>البند/السيارة</th>
+                            <th>الكمية</th>
+                            <th>الحالة</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="procurement-tbody">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div class="content-wrapper" id="owner-wrapper">
+                <h2>مراجعة السيارات بـ "مستندات ناقصة" <span id="incomplete-status-msg"></span></h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>صورة</th>
+                            <th>السيارة</th>
+                            <th>السعر</th>
+                            <th>العميل</th>
+                            <th>أمر المالك</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incomplete-cars-tbody">
+                        </tbody>
+                </table>
+                
+                <h2 style="margin-top: 30px;">طلب سيارات جديدة (قائمة الموردين)</h2>
+                <p>يمكن للمالك إرسال طلب شراء فوري للسيارات المتوفرة لدى الموردين.</p>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>السيارة (الاسم والموديل)</th>
+                            <th>المواصفات الرئيسية</th>
+                            <th>إجراء طلب الشراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="car-request-list-tbody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="content-wrapper" id="chat-wrapper">
+                <h2>الدردشة العامة للموظفين</h2>
+                <div id="chat-messages">
+                    <div class="message-bubble received">
+                        <p><strong>System:</strong> مرحباً بكم في لوحة تحكم ALEX ECC. استخدموا هذه الدردشة للتواصل السريع بين الأقسام.</p>
+                        <span class="timestamp">10:00 AM</span>
+                    </div>
+                </div>
+                <div id="chat-input-container">
+                    <input type="text" id="chat-input" placeholder="اكتب رسالتك..." onkeydown="if(event.keyCode == 13) document.getElementById('send-chat-button').click()">
+                    <button id="send-chat-button"><i class="fas fa-paper-plane"></i> إرسال</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // **الثوابت والمتغيرات**
+            const CARS_KEY = 'alex_ecc_cars';
+            const INVENTORY_KEY = 'alex_ecc_inventory';
+            const TASKS_KEY = 'alex_ecc_tasks';
+            const EMPLOYEES_KEY = 'alex_ecc_employees';
+            const PROCUREMENT_KEY = 'alex_ecc_procurement_orders'; 
+            const SALARY_PAYMENT_KEY = 'alex_ecc_salaries_paid_date'; // مفتاح تتبع الدفع الشهري
+            const USER_ROLE_KEY = 'currentUserRole';
+            const USER_NAME_KEY = 'currentUserName';
+            const correctPIN = '1122'; 
+
+            let currentUserRole = null;
+            let currentUserName = null;
+
+            // العناصر الرئيسية
+            const loginForm = document.getElementById('loginForm');
+            const contentWrappers = document.querySelectorAll('.content-wrapper');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const paySalariesBtn = document.getElementById('pay-salaries-btn');
+            const addCarForm = document.getElementById('addCarForm');
+            const addTaskForm = document.getElementById('addTaskForm');
+            const tasksTbody = document.getElementById('tasks-tbody');
+            const paymentStatusMsg = document.getElementById('payment-status-msg');
+
+            // قائمة السيارات المتاحة في مصر للمالك (Nissan & Jitor)
+            const ALL_CARS_EG = [
+                { name: 'Nissan', model: 'Sunny', specs: 'موتور 1.5 لتر، 4 سلندر، مانيوال/أوتوماتيك' },
+                { name: 'Nissan', model: 'Sentra', specs: 'موتور 1.6 لتر، تصميم عصري، قيادة ناعمة' },
+                { name: 'Nissan', model: 'Qashqai', specs: 'كروس أوفر، موتور 1.3 لتر تيربو، تصميم أوروبي' },
+                { name: 'Nissan', model: 'Juke', specs: 'كروس أوفر صغير، تصميم رياضي وجريء' },
+                { name: 'Jitor', model: 'Coolray', specs: 'كروس أوفر رياضي، موتور 1.5 لتر تيربو، ناقل مزدوج' },
+                { name: 'Jitor', model: 'Okavango', specs: 'SUV عائلي 7 مقاعد، تقنيات متقدمة' },
+                { name: 'Jitor', model: 'Emgrand', specs: 'سيدان أنيقة، اقتصادية في استهلاك الوقود' },
+            ];
+
+            // **وظائف التخزين المحلي (Local Storage)**
+            function getDefaultEmployeeData() {
+                return [
+                    { id: 501, name: 'إبراهيم جمال', role: 'Owner', salary: 50000, paid: false },
+                    { id: 502, name: 'سارة منصور', role: 'Finance', salary: 15000, paid: false },
+                    { id: 503, name: 'محمد ناصر', role: 'Sales', salary: 12000, paid: false },
+                    { id: 504, name: 'هند علي', role: 'Inventory', salary: 8000, paid: false },
+                ];
+            }
+            
+            function getDefaultProcurementOrders() {
+                return [
+                    { id: 101, item: 'مرشحات هواء (Filters)', quantity: 100, status: 'Pending' },
+                    { id: 102, item: 'إطارات (Tyres)', quantity: 50, status: 'Sent' },
+                ];
+            }
+            
+            function initializeDefaultData() {
+                // 1. بيانات السيارات (Nissan & Jitor فقط)
+                if (!localStorage.getItem(CARS_KEY)) {
+                    const defaultCars = [
+                        { id: 1, name: 'Nissan', model: 'Sunny', color: 'أسود', price: 400000, client: 'أحمد سعيد', status: 'Delivered', img: 'https://via.placeholder.com/50/2ecc71/ffffff?text=N1' },
+                        { id: 2, name: 'Jitor', model: 'Coolray', color: 'فضي', price: 650000, client: 'فاطمة محمد', status: 'Reserved', img: 'https://via.placeholder.com/50/3498db/ffffff?text=J2' },
+                        { id: 3, name: 'Nissan', model: 'Sentra', color: 'أبيض', price: 550000, client: 'خالد علي', status: 'Incomplete', img: 'https://via.placeholder.com/50/e74c3c/ffffff?text=N3' },
+                    ];
+                    localStorage.setItem(CARS_KEY, JSON.stringify(defaultCars));
+                }
+                // 2. بيانات المخزون (Nissan & Jitor فقط)
+                if (!localStorage.getItem(INVENTORY_KEY)) {
+                    const defaultInventory = [
+                        { id: 101, name: 'Jitor', model: 'Okavango', color: 'أزرق', vin: 'J1B2C3D4' },
+                        { id: 102, name: 'Nissan', model: 'Qashqai', color: 'بني', vin: 'N5F6G7H8' },
+                    ];
+                    localStorage.setItem(INVENTORY_KEY, JSON.stringify(defaultInventory));
+                }
+                // 3. بيانات المهام
+                if (!localStorage.getItem(TASKS_KEY)) {
+                     const defaultTasks = [
+                        { id: 201, description: 'مراجعة طلبات التوظيف الجديدة', assigned: 'HR', completed: false },
+                        { id: 202, description: 'إرسال تقرير المبيعات الشهري', assigned: 'Sales', completed: true }
+                    ];
+                    localStorage.setItem(TASKS_KEY, JSON.stringify(defaultTasks));
+                }
+                // 4. بيانات الموظفين
+                if (!localStorage.getItem(EMPLOYEES_KEY)) {
+                    localStorage.setItem(EMPLOYEES_KEY, JSON.stringify(getDefaultEmployeeData()));
+                }
+                 // 5. بيانات أوامر الشراء
+                if (!localStorage.getItem(PROCUREMENT_KEY)) {
+                    localStorage.setItem(PROCUREMENT_KEY, JSON.stringify(getDefaultProcurementOrders()));
+                }
+            }
+            
+            function getCarData() { return JSON.parse(localStorage.getItem(CARS_KEY)) || []; }
+            function saveCarData(data) { localStorage.setItem(CARS_KEY, JSON.stringify(data)); }
+
+            function getInventoryData() { return JSON.parse(localStorage.getItem(INVENTORY_KEY)) || []; }
+            function saveInventoryData(data) { localStorage.setItem(INVENTORY_KEY, JSON.stringify(data)); }
+
+            function getTaskData() { return JSON.parse(localStorage.getItem(TASKS_KEY)) || []; }
+            function saveTaskData(data) { localStorage.setItem(TASKS_KEY, JSON.stringify(data)); }
+            
+            function getEmployeeData() { return JSON.parse(localStorage.getItem(EMPLOYEES_KEY)) || getDefaultEmployeeData(); }
+            function saveEmployeeData(data) { localStorage.setItem(EMPLOYEES_KEY, JSON.stringify(data)); }
+            
+            function getProcurementData() { return JSON.parse(localStorage.getItem(PROCUREMENT_KEY)) || getDefaultProcurementOrders(); }
+            function saveProcurementData(data) { localStorage.setItem(PROCUREMENT_KEY, JSON.stringify(data)); }
+            
+            // **وظيفة التحقق الشهري وإعادة التعيين**
+            function checkAndResetMonthlyPayroll() {
+                const lastPaymentDateStr = localStorage.getItem(SALARY_PAYMENT_KEY);
+                const now = new Date();
+
+                if (lastPaymentDateStr) {
+                    const lastPaymentDate = new Date(lastPaymentDateStr);
+                    
+                    // تحقق مما إذا كان الشهر الحالي أكبر من الشهر المخزن
+                    // أو السنة الحالية أكبر من السنة المخزنة
+                    const isNewMonth = now.getMonth() !== lastPaymentDate.getMonth() || now.getFullYear() !== lastPaymentDate.getFullYear();
+
+                    if (isNewMonth) {
+                        // إعادة تعيين حالة الدفع لجميع الموظفين للشهر الجديد
+                        let employees = getEmployeeData();
+                        let resetEmployees = employees.map(e => ({...e, paid: false}));
+                        saveEmployeeData(resetEmployees);
+                        
+                        // مسح تاريخ الدفع لإعادة تفعيل عملية الدفع
+                        localStorage.removeItem(SALARY_PAYMENT_KEY); 
+                        console.log("تم إعادة تعيين نظام المرتبات للشهر الجديد.");
+                    }
+                }
+            }
+
+            // **وظائف الإحصائيات**
+            function updateOverviewStats() {
+                const cars = getCarData();
+                const inventory = getInventoryData();
+                const tasks = getTaskData();
+                const orders = getProcurementData();
+
+                // 1. إجمالي السيارات المباعة
+                document.getElementById('sold-cars-count').textContent = cars.length;
+
+                // 2. المخزون المتوفر
+                document.getElementById('inventory-count').textContent = inventory.length;
+
+                // 3. مهام قيد الإنتهاء
+                const pendingTasks = tasks.filter(t => !t.completed).length;
+                document.getElementById('pending-tasks-count').textContent = pendingTasks;
+
+                // 4. أوامر شراء مُرسلة
+                const pendingOrders = orders.filter(o => o.status !== 'Completed').length;
+                document.getElementById('procurement-orders-count').textContent = pendingOrders;
+
+                // تحديث تنبيه المرتبات في قسم الحسابات
+                const lastPaymentDate = localStorage.getItem(SALARY_PAYMENT_KEY);
+                const isPayrollListVisible = document.getElementById('payroll-list-section').style.display === 'block';
+
+                if (!lastPaymentDate) {
+                    paymentStatusMsg.innerHTML = '<span style="color: var(--accent-color); font-weight: bold;">لم يتم تحويل المرتبات هذا الشهر بعد.</span>';
+                    paySalariesBtn.disabled = isPayrollListVisible; 
+                    if (currentUserRole === 'Finance' || currentUserRole === 'Owner') {
+                        document.getElementById('user-urgent-alert').style.display = 'block';
+                        document.getElementById('urgent-alert-msg').textContent = 'تنبيه: لم يتم تحويل المرتبات هذا الشهر.';
+                    }
+                } else {
+                    paymentStatusMsg.innerHTML = `<span style="color: var(--success-color);">آخر تحويل للمرتبات كان في: ${lastPaymentDate}</span>`;
+                    paySalariesBtn.disabled = true;
+                }
+                
+                // تحديث التنبيه العام
+                const incompleteCars = cars.filter(c => c.status === 'Incomplete').length;
+                if (incompleteCars > 0 && currentUserRole === 'Owner') {
+                     document.getElementById('user-urgent-alert').style.display = 'block';
+                     document.getElementById('urgent-alert-msg').textContent = `تنبيه للمالك: لديك ${incompleteCars} سيارات بمستندات ناقصة في انتظار الموافقة.`;
+                } else if (pendingTasks > 0 && (currentUserRole === 'HR' || currentUserRole === 'Owner')) {
+                    document.getElementById('user-urgent-alert').style.display = 'block';
+                    document.getElementById('urgent-alert-msg').textContent = `لديك ${pendingTasks} مهام معلقة في قسم الموارد البشرية.`;
+                } else if (pendingOrders > 0 && currentUserRole === 'Procurement') {
+                    document.getElementById('user-urgent-alert').style.display = 'block';
+                    document.getElementById('urgent-alert-msg').textContent = `لديك ${pendingOrders} أوامر شراء قيد المراجعة/التنفيذ.`;
+                } else if (!lastPaymentDate && (currentUserRole === 'Finance' || currentUserRole === 'Owner')) {
+                     // تنبيه المرتبات مفعل بالفعل
+                } else {
+                    document.getElementById('user-urgent-alert').style.display = 'none';
+                }
+            }
+            
+            // ----------------------------------------------------
+            // **وظائف عرض البيانات (Rendering Functions)**
+            // ----------------------------------------------------
+
+            function getStatusColor(status) {
+                switch (status) {
+                    case 'Delivered': return '#2ecc71';
+                    case 'Reserved': return '#3498db';
+                    case 'Incomplete': return '#e74c3c';
+                    default: return '#7f8c8d';
+                }
+            }
+            function getStatusText(status) {
+                switch (status) {
+                    case 'Delivered': return 'تم التسليم';
+                    case 'Reserved': return 'محجوزة';
+                    case 'Incomplete': return 'مستندات ناقصة';
+                    default: return 'غير معروف';
+                }
+            }
+
+            function renderSoldCars() {
+                const cars = getCarData();
+                const tbody = document.getElementById('sold-cars-tbody');
+                const incompleteTbody = document.getElementById('incomplete-cars-tbody');
+                tbody.innerHTML = '';
+                incompleteTbody.innerHTML = '';
+
+                let incompleteCount = 0;
+
+                cars.forEach(car => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><img src="${car.img}" alt="${car.name}" class="car-img"></td>
+                        <td class="car-details">
+                            <h4>${car.name} ${car.model}</h4>
+                            <p>اللون: ${car.color}</p>
+                        </td>
+                        <td>${car.price.toLocaleString()} EGP</td>
+                        <td>${car.client}</td>
+                        <td><span style="color: ${getStatusColor(car.status)}; font-weight: bold;">${getStatusText(car.status)}</span></td>
+                    `;
+                    tbody.appendChild(row);
+
+                    // إضافة السيارات الناقصة إلى قسم المالك
+                    if (car.status === 'Incomplete') {
+                        incompleteCount++;
+                        const incompleteRow = document.createElement('tr');
+                        incompleteRow.innerHTML = `
+                            <td><img src="${car.img}" alt="${car.name}" class="car-img"></td>
+                            <td class="car-details">
+                                <h4>${car.name} ${car.model}</h4>
+                                <p>اللون: ${car.color}</p>
+                            </td>
+                            <td>${car.price.toLocaleString()} EGP</td>
+                            <td>${car.client}</td>
+                            <td><button class="action-button approve-button" onclick="completeIncompleteCar(${car.id})">إصدار أمر بالإتمام</button></td>
+                        `;
+                        incompleteTbody.appendChild(incompleteRow);
+                    }
+                });
+                
+                document.getElementById('incomplete-status-msg').textContent = 
+                    incompleteCount > 0 ? `توجد ${incompleteCount} سيارات ناقصة تنتظر أمر المالك.` : 'لا توجد سيارات ناقصة تنتظر أمر المالك حالياً. ✅';
+
+                updateOverviewStats();
+            }
+
+            function renderAvailableInventory() {
+                const inventory = getInventoryData();
+                const tbody = document.getElementById('available-cars-tbody');
+                tbody.innerHTML = '';
+                
+                inventory.forEach(car => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${car.name} ${car.model} (${car.color})</td>
+                        <td>${car.vin}</td>
+                        <td><span style="color: #2ecc71; font-weight: bold;">متوفرة بالمخزون</span></td>
+                        <td>
+                            <button class="action-button delete-button" onclick="deleteInventoryCar(${car.id})"><i class="fas fa-trash"></i> حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                document.getElementById('inventory-count-msg').textContent = `إجمالي السيارات المتاحة: ${inventory.length}`;
+                updateOverviewStats();
+            }
+            
+            function renderEmployeesSalary() {
+                const employees = getEmployeeData();
+                const tbody = document.getElementById('employees-tbody');
+                tbody.innerHTML = '';
+                
+                let allPaid = true;
+
+                employees.forEach(emp => {
+                    const row = document.createElement('tr');
+                    const statusText = emp.paid 
+                        ? '<span style="color: var(--success-color); font-weight: bold;">تم التحويل</span>' 
+                        : '<span style="color: var(--accent-color);">معلق</span>';
+                    
+                    // يتم إظهار زر التحويل فقط إذا لم يتم الدفع بعد
+                    const actionButton = emp.paid 
+                        ? '<button class="action-button approve-button" disabled style="background-color: #7f8c8d;"><i class="fas fa-check"></i> تم</button>' 
+                        : `<button class="action-button approve-button" onclick="individualTransfer(${emp.id})" id="transfer-btn-${emp.id}"><i class="fas fa-money-check-alt"></i> تحويل المرتب</button>`;
+
+                    if (!emp.paid) {
+                        allPaid = false;
+                    }
+
+                    row.innerHTML = `
+                        <td>${emp.name}</td>
+                        <td>${emp.role}</td>
+                        <td>${emp.salary.toLocaleString()}</td>
+                        <td>${statusText}</td>
+                        <td>${actionButton}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                const completeBtn = document.getElementById('complete-payroll-btn');
+                
+                if (allPaid) {
+                    document.getElementById('payment-progress-msg').textContent = '✅ جميع المرتبات تم تحويلها هذا الشهر.';
+                    completeBtn.style.display = 'block';
+                } else {
+                    document.getElementById('payment-progress-msg').textContent = `يتبقى ${employees.filter(e => !e.paid).length} مرتب لم يتم تحويله.`;
+                    completeBtn.style.display = 'none';
+                }
+            }
+
+            function renderTasks() {
+                const tasks = getTaskData();
+                tasksTbody.innerHTML = '';
+                
+                tasks.forEach(task => {
+                    const row = document.createElement('tr');
+                    const statusText = task.completed ? '<span style="color: #2ecc71;">تمت</span>' : '<span style="color: #e67e22;">قيد التنفيذ</span>';
+                    const actionButton = task.completed ? '' : `<button class="task-action-button approve-button" onclick="markTaskComplete(${task.id})"><i class="fas fa-check"></i> إتمام</button>`;
+
+                    row.innerHTML = `
+                        <td>${task.description}</td>
+                        <td>${task.assigned}</td>
+                        <td>${statusText}</td>
+                        <td>${actionButton}</td>
+                    `;
+                    tasksTbody.appendChild(row);
+                });
+                updateOverviewStats();
+            }
+
+            function renderCarRequestList() {
+                const tbody = document.getElementById('car-request-list-tbody');
+                tbody.innerHTML = '';
+
+                ALL_CARS_EG.forEach(car => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${car.name} ${car.model}</td>
+                        <td>${car.specs}</td>
+                        <td>
+                            <button class="action-button approve-button" onclick="requestNewCar('${car.name}', '${car.model}')"><i class="fas fa-cart-plus"></i> طلب شراء</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            function renderProcurementOrders() {
+                const orders = getProcurementData();
+                const tbody = document.getElementById('procurement-tbody');
+                tbody.innerHTML = '';
+
+                orders.forEach(order => {
+                    const statusColor = order.status === 'Completed' ? '#2ecc71' : (order.status === 'Sent' ? '#3498db' : '#f39c12');
+                    const actionButton = order.status === 'Pending' 
+                        ? `<button class="action-button approve-button" onclick="sendProcurementOrder(${order.id})"><i class="fas fa-share-square"></i> إرسال أمر الشراء</button>`
+                        : `<button class="action-button approve-button" disabled style="background-color: #7f8c8d;">تم الإرسال</button>`;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>#${order.id}</td>
+                        <td>${order.item}</td>
+                        <td>${order.quantity.toLocaleString()}</td>
+                        <td><span style="color: ${statusColor}; font-weight: bold;">${order.status === 'Completed' ? 'مكتمل' : (order.status === 'Sent' ? 'مُرسل' : 'قيد الانتظار')}</span></td>
+                        <td>${actionButton}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                updateOverviewStats();
+            }
+
+
+            // ----------------------------------------------------
+            // **وظائف حماية البيانات والأكشن (Action Handlers)**
+            // ----------------------------------------------------
+            
+            /**
+             * وظيفة تسجيل الخروج
+             */
+            function logoutUser() {
+                if (confirm("هل أنت متأكد من تسجيل الخروج؟ سيتم مسح بيانات الجلسة من المتصفح.")) {
+                    localStorage.removeItem(USER_ROLE_KEY);
+                    localStorage.removeItem(USER_NAME_KEY);
+                    window.location.reload(); // إعادة تحميل الصفحة للعودة لشاشة الدخول
+                }
+            }
+
+
+            function switchSection(sectionId, isSecured) {
+                document.getElementById('current-section-title').textContent = 
+                    document.querySelector(`[data-section="${sectionId}"] span`).textContent;
+
+                if (isSecured && !currentUserRole) {
+                    alert('عفواً، يجب تسجيل الدخول اولاً.');
+                    return;
+                }
+
+                const userRoles = {
+                    'accounts': ['Finance', 'Owner'],
+                    'inventory': ['Inventory', 'Owner', 'Sales'],
+                    'hr': ['HR', 'Owner', 'Finance'],
+                    'procurement': ['Procurement', 'Owner'],
+                    'owner': ['Owner']
+                };
+
+                if (userRoles[sectionId] && !userRoles[sectionId].includes(currentUserRole)) {
+                    if (confirm(`صلاحيتك (${currentUserRole}) لا تسمح بالدخول. أدخل رمز PIN سري (1122) للموافقة من المالك:`)) {
+                        const pin = prompt("أدخل رمز PIN:");
+                        if (pin !== correctPIN) {
+                            alert('رمز PIN غير صحيح. تم رفض الدخول.');
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+                }
+
+                contentWrappers.forEach(wrapper => wrapper.style.display = 'none');
+                document.getElementById(sectionId + '-wrapper').style.display = 'flex';
+
+                navLinks.forEach(link => link.classList.remove('active'));
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+                
+                // إعادة تحميل الجداول لكل قسم
+                if (sectionId === 'sold-cars') renderSoldCars();
+                if (sectionId === 'inventory') renderAvailableInventory();
+                if (sectionId === 'hr') renderTasks();
+                if (sectionId === 'procurement') renderProcurementOrders(); 
+                if (sectionId === 'owner') {
+                    renderSoldCars(); 
+                    renderCarRequestList(); 
+                }
+                if (sectionId === 'accounts') {
+                    // عند الدخول إلى قسم الحسابات، نبدأ بشاشة الزر المنفصل
+                    document.getElementById('payroll-overview').style.display = 'block';
+                    document.getElementById('payroll-list-section').style.display = 'none';
+                    updateOverviewStats();
+                }
+            }
+            
+            /**
+             * دالة تحويل المرتب الفردي (مع محاكاة البنك)
+             */
+            function individualTransfer(employeeId) {
+                if (currentUserRole !== 'Finance' && currentUserRole !== 'Owner') {
+                    alert('عفواً، لا تملك الصلاحية للقيام بهذه العملية.');
+                    return;
+                }
+                
+                // **جزء محاكاة البنك QNB (المطلوب)**
+                const confirmation = confirm('سوف يتم تحويل المرتب من خلال بوابة البنك (محاكاة QNB). هل أنت متأكد من التحويل؟');
+                if (!confirmation) return;
+                
+                let employees = getEmployeeData();
+                const employeeIndex = employees.findIndex(e => e.id === employeeId);
+                
+                if (employeeIndex !== -1 && !employees[employeeIndex].paid) {
+                    employees[employeeIndex].paid = true;
+                    saveEmployeeData(employees);
+                    
+                    // يتم إظهار رسالة تفيد بالتحويل عبر البنك (محاكاة)
+                    alert(`✅ تم التحويل بنجاح عبر بوابة البنك. مرتب الموظف ${employees[employeeIndex].name} أصبح مدفوعاً لهذا الشهر.`);
+                    
+                    renderEmployeesSalary(); 
+                    updateOverviewStats();
+                }
+            }
+
+            /**
+             * دالة بدء عملية كشوف المرتبات (التحويل من الزر المنفصل إلى الجدول)
+             */
+            function markPaymentDone() {
+                if (currentUserRole !== 'Finance' && currentUserRole !== 'Owner') {
+                    alert('عفواً، لا تملك الصلاحية لتحويل المرتبات.');
+                    return;
+                }
+                
+                const overviewDiv = document.getElementById('payroll-overview');
+                const listDiv = document.getElementById('payroll-list-section');
+                
+                if (localStorage.getItem(SALARY_PAYMENT_KEY)) {
+                    alert('تمت معالجة المرتبات هذا الشهر بالفعل.');
+                    return;
+                }
+
+                overviewDiv.style.display = 'none';
+                listDiv.style.display = 'block';
+                renderEmployeesSalary();
+                updateOverviewStats();
+                
+                document.getElementById('complete-payroll-btn').onclick = completeFinalPayroll;
+            }
+            
+            /**
+             * دالة إتمام عملية كشوف المرتبات (لإعادة التعيين الشهري)
+             */
+            function completeFinalPayroll() {
+                const employees = getEmployeeData();
+                const allPaid = employees.every(e => e.paid);
+
+                if (allPaid) {
+                    // حفظ تاريخ الدفع لتتبع إعادة التعيين الشهري
+                    localStorage.setItem(SALARY_PAYMENT_KEY, new Date().toLocaleString('en-US'));
+                    
+                    // لا يتم إعادة تعيين حالة paid هنا، بل يتم ذلك عبر دالة checkAndResetMonthlyPayroll في الشهر التالي
+                    
+                    alert('تمت عملية إتمام كشوف المرتبات بنجاح. سيتم إعادة تعيين النظام في بداية الشهر القادم.');
+                    
+                    document.getElementById('payroll-overview').style.display = 'block';
+                    document.getElementById('payroll-list-section').style.display = 'none';
+                    updateOverviewStats();
+                } else {
+                    alert('عفواً، يجب تحويل جميع المرتبات أولاً لإتمام العملية.');
+                }
+            }
+
+            function completeIncompleteCar(carId) {
+                if (currentUserRole !== 'Owner') {
+                    alert('يجب أن تكون المالك لإصدار أمر بالإتمام.');
+                    return;
+                }
+                if (!confirm('هل أنت متأكد أن مستندات هذه السيارة كاملة ويمكن إصدار أمر التسليم؟')) return;
+                
+                let cars = getCarData();
+                const carIndex = cars.findIndex(c => c.id === carId);
+                
+                if (carIndex !== -1) {
+                    cars[carIndex].status = 'Delivered';
+                    saveCarData(cars);
+                    alert('تم إصدار أمر إتمام المستندات بنجاح. تم تحديث الحالة إلى "تم التسليم".');
+                    renderSoldCars();
+                }
+            }
+
+            function deleteInventoryCar(carId) {
+                if (currentUserRole !== 'Inventory' && currentUserRole !== 'Owner') {
+                    alert('عفواً، لا تملك الصلاحية لحذف سيارة من المخزون.');
+                    return;
+                }
+                if (!confirm('هل أنت متأكد من حذف هذه السيارة من المخزون؟')) return;
+
+                let inventory = getInventoryData().filter(car => car.id !== carId);
+                saveInventoryData(inventory);
+                alert('تم حذف السيارة من المخزون.');
+                renderAvailableInventory();
+            }
+
+            function sendProcurementOrder(orderId) {
+                 if (currentUserRole !== 'Procurement' && currentUserRole !== 'Owner') {
+                    alert('عفواً، يجب أن تكون مسؤول المشتريات لإرسال أمر الشراء.');
+                    return;
+                }
+                if (!confirm('هل أنت متأكد من إرسال أمر الشراء هذا إلى المورد؟')) return;
+
+                let orders = getProcurementData();
+                const orderIndex = orders.findIndex(o => o.id === orderId);
+
+                if (orderIndex !== -1 && orders[orderIndex].status === 'Pending') {
+                    orders[orderIndex].status = 'Sent';
+                    saveProcurementData(orders);
+                    alert(`تم إرسال أمر الشراء رقم #${orderId} بنجاح.`);
+                    renderProcurementOrders();
+                }
+            }
+            
+            function requestNewCar(carName, carModel) {
+                 if (currentUserRole !== 'Owner') {
+                    alert('عفواً، هذه الوظيفة مخصصة للمالك فقط.');
+                    return;
+                }
+                if (!confirm(`هل أنت متأكد من إرسال طلب شراء لـ ${carName} ${carModel} بكمية (1) إلى قسم المشتريات؟`)) return;
+
+                let orders = getProcurementData();
+                const newOrderId = Date.now();
+                
+                const newOrder = {
+                    id: newOrderId,
+                    item: `سيارة: ${carName} ${carModel}`,
+                    quantity: 1,
+                    status: 'Pending' 
+                };
+
+                orders.push(newOrder);
+                saveProcurementData(orders);
+                alert(`تم إنشاء طلب شراء جديد لـ ${carName} ${carModel} وإرساله لقسم المشتريات للمتابعة.`);
+                updateOverviewStats();
+            }
+
+
+            function markTaskComplete(taskId) {
+                if (currentUserRole !== 'HR' && currentUserRole !== 'Owner') {
+                    alert('عفواً، لا تملك صلاحية إتمام المهام.');
+                    return;
+                }
+                let tasks = getTaskData();
+                const taskIndex = tasks.findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) {
+                    tasks[taskIndex].completed = true;
+                    saveTaskData(tasks);
+                    renderTasks();
+                }
+            }
+
+            function sendChatMessage(department) {
+                const input = document.getElementById('chat-input');
+                const message = input.value.trim();
+                
+                if (!message) return;
+
+                const chatMessagesDiv = document.getElementById('chat-messages');
+                const now = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+                const newMessage = document.createElement('div');
+                newMessage.className = 'message-bubble sent';
+                newMessage.innerHTML = `
+                    <p><strong>${currentUserName} (${currentUserRole}):</strong> ${message}</p>
+                    <span class="timestamp">${now}</span>
+                `;
+                chatMessagesDiv.prepend(newMessage); // إضافتها في الأعلى
+
+                input.value = '';
+            }
+
+
+            // ----------------------------------------------------
+            // **وظائف بدء التشغيل (Initialization)**
+            // ----------------------------------------------------
+
+            document.addEventListener('DOMContentLoaded', () => {
+                // 1. إعداد البيانات الأولية
+                initializeDefaultData();
+                
+                // 2. فحص وإعادة تعيين كشوف المرتبات إذا بدأ شهر جديد
+                checkAndResetMonthlyPayroll();
+
+                // 3. تحديث الأدوار المحفوظة
+                currentUserRole = localStorage.getItem(USER_ROLE_KEY);
+                currentUserName = localStorage.getItem(USER_NAME_KEY);
+
+                // 4. ربط الأحداث (Event Listeners)
+
+                // تسجيل الدخول
+                loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value.trim();
+                    const role = document.getElementById('user-role').value;
+                    
+                    if (username && role) {
+                        currentUserRole = role;
+                        currentUserName = username;
+                        localStorage.setItem(USER_ROLE_KEY, role);
+                        localStorage.setItem(USER_NAME_KEY, username);
+                        document.getElementById('login-screen').style.display = 'none';
+                        document.getElementById('dashboard-container').style.display = 'flex';
+                        document.getElementById('dashboard-user-info').textContent = `مرحباً، ${currentUserName} (${currentUserRole})`;
+                        switchSection('overview', false); 
+                    } else {
+                        alert('يجب إدخال اسم المستخدم واختيار الدور.');
+                    }
+                });
+
+                // إضافة سيارة جديدة للمخزون
+                addCarForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('new-car-name').value;
+                    const model = document.getElementById('new-car-model').value;
+                    const color = document.getElementById('new-car-color').value;
+                    const vin = document.getElementById('new-car-vin').value;
+
+                    const inventory = getInventoryData();
+                    const newCar = {
+                        id: Date.now(),
+                        name,
+                        model,
+                        color,
+                        vin,
+                    };
+                    // فحص لضمان أن السيارة إما Nissan أو Jitor
+                    if (name !== 'Nissan' && name !== 'Jitor') {
+                        alert('عفواً، لا يمكن إضافة سوى سيارات Nissan أو Jitor.');
+                        return;
+                    }
+                    
+                    inventory.push(newCar);
+                    saveInventoryData(inventory);
+                    alert('تم إضافة السيارة إلى المخزون بنجاح!');
+                    addCarForm.reset();
+                    renderAvailableInventory();
+                });
+
+                // إضافة مهمة جديدة
+                addTaskForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const description = document.getElementById('new-task-description').value;
+                    const assigned = document.getElementById('new-task-assigned').value;
+
+                    const tasks = getTaskData();
+                    const newTask = {
+                        id: Date.now(),
+                        description,
+                        assigned,
+                        completed: false
+                    };
+                    tasks.push(newTask);
+                    saveTaskData(tasks);
+                    alert('تم إضافة المهمة بنجاح!');
+                    addTaskForm.reset();
+                    renderTasks();
+                });
+                
+                // ربط التنقل (Navigation)
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const section = e.currentTarget.getAttribute('data-section');
+                        const isSecured = e.currentTarget.hasAttribute('data-secured');
+                        switchSection(section, isSecured);
+                    });
+                });
+
+                // 5. التحقق من حالة تسجيل الدخول وتوجيه المستخدم
+                if (currentUserRole) {
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('dashboard-container').style.display = 'flex';
+                    document.getElementById('dashboard-user-info').textContent = `مرحباً، ${currentUserName} (${currentUserRole})`;
+                    switchSection('overview', false); 
+                } else {
+                    document.getElementById('login-screen').style.display = 'flex';
+                    document.getElementById('dashboard-container').style.display = 'none';
+                }
+
+                // 6. ربط وظائف الأكشن الرئيسية
+                if (paySalariesBtn) {
+                    // ربط زر "تحويل المرتبات الآن" بالدالة markPaymentDone (التي تظهر الجدول)
+                    paySalariesBtn.addEventListener('click', markPaymentDone);
+                }
+                if (document.getElementById('send-chat-button')) {
+                    document.getElementById('send-chat-button').addEventListener('click', () => sendChatMessage('General'));
+                }
+                
+                // تحديث الإحصائيات عند التحميل
+                updateOverviewStats();
+
+            });
+
+            // تعريض بعض الوظائف للـ onclick في HTML
+            window.switchSection = switchSection;
+            window.markPaymentDone = markPaymentDone;
+            window.completeIncompleteCar = completeIncompleteCar;
+            window.deleteInventoryCar = deleteInventoryCar;
+            window.sendProcurementOrder = sendProcurementOrder;
+            window.markTaskComplete = markTaskComplete;
+            window.individualTransfer = individualTransfer; 
+            window.requestNewCar = requestNewCar; 
+            window.logoutUser = logoutUser; 
+
+        })(); // End of IIFE
+    </script>
+</body>
+</html>
